@@ -47,9 +47,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // 予約の重複チェック
-        const conflictingReservation = checkConflict(room, startDate, endDate);
+        const conflictingReservation = check_conflict(room, startDate, endDate);
         if (conflictingReservation) {
-            alert(`予約の時間が重複しています。\n${formatDate(conflictingReservation.startTime)}～${formatDate(conflictingReservation.endTime)}は既に予約されています。`);
+            alert(`予約の時間が重複しています。\n${format_date(conflictingReservation.startTime)}～${format_date(conflictingReservation.endTime)}は既に予約されています。`);
             return;
         }
         
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
         roomImages.forEach(img => img.classList.remove('selected'));
         
         // 予約一覧を更新
-        displayReservations();
+        display_reservations();
         
         alert('予約が完了しました！');
     });
@@ -82,14 +82,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // CSVダウンロードボタン
     const downloadCsvBtn = document.getElementById('download-csv');
     downloadCsvBtn.addEventListener('click', function() {
-        downloadReservationsAsCsv();
+        download_reservations_as_csv();
     });
     
     // 初期表示時に予約一覧を表示
-    displayReservations();
+    display_reservations();
     
     // 予約の重複チェック関数
-    function checkConflict(room, newStart, newEnd) {
+    function check_conflict(room, newStart, newEnd) {
         for (let reservation of reservations) {
             if (reservation.room === room) {
                 const existingStart = new Date(reservation.startTime);
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 予約一覧表示関数
-    function displayReservations() {
+    function display_reservations() {
         const reservationsList = document.getElementById('reservations-list');
         reservationsList.innerHTML = '';
         
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
             reservationsList.appendChild(roomAHeader);
             
             roomA.forEach(reservation => {
-                addReservationItem(reservation, reservationsList);
+                add_reservation_item(reservation, reservationsList);
             });
         }
         
@@ -141,13 +141,13 @@ document.addEventListener('DOMContentLoaded', function() {
             reservationsList.appendChild(roomBHeader);
             
             roomB.forEach(reservation => {
-                addReservationItem(reservation, reservationsList);
+                add_reservation_item(reservation, reservationsList);
             });
         }
     }
     
     // 予約アイテムを作成して追加
-    function addReservationItem(reservation, container) {
+    function add_reservation_item(reservation, container) {
         const item = document.createElement('div');
         item.className = 'reservation-item';
         
@@ -156,8 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         item.innerHTML = `
             <p><strong>予約者:</strong> ${reservation.reserverName}</p>
-            <p><strong>利用開始:</strong> ${formatDate(startTime)}</p>
-            <p><strong>利用終了:</strong> ${formatDate(endTime)}</p>
+            <p><strong>利用開始:</strong> ${format_date(startTime)}</p>
+            <p><strong>利用終了:</strong> ${format_date(endTime)}</p>
             <button class="delete-btn" data-id="${reservation.id}">キャンセル</button>
         `;
         
@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteBtn.addEventListener('click', function() {
             if (confirm('この予約をキャンセルしますか？')) {
                 const reservationId = parseInt(this.getAttribute('data-id'));
-                deleteReservation(reservationId);
+                delete_reservation(reservationId);
             }
         });
         
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 日付フォーマット関数
-    function formatDate(date) {
+    function format_date(date) {
         const options = { 
             year: 'numeric', 
             month: '2-digit', 
@@ -186,14 +186,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 予約削除関数
-    function deleteReservation(id) {
+    function delete_reservation(id) {
         reservations = reservations.filter(reservation => reservation.id !== id);
         localStorage.setItem('reservations', JSON.stringify(reservations));
-        displayReservations();
+        display_reservations();
     }
     
     // CSVダウンロード関数
-    function downloadReservationsAsCsv() {
+    function download_reservations_as_csv() {
         if (reservations.length === 0) {
             alert('予約データがありません。');
             return;
@@ -210,10 +210,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const row = [
                 `会議室${reservation.room}`,
-                formatDateForCsv(startTime),
-                formatDateForCsv(endTime),
+                format_date_for_csv(startTime),
+                format_date_for_csv(endTime),
                 reservation.reserverName,
-                formatDateForCsv(createdAt)
+                format_date_for_csv(createdAt)
             ].join(',');
             
             csvContent += row + '\n';
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // CSV用日付フォーマット関数
-    function formatDateForCsv(date) {
+    function format_date_for_csv(date) {
         const year = date.getFullYear();
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const day = date.getDate().toString().padStart(2, '0');
