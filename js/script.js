@@ -20,6 +20,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // 開始時間が変更されたら終了時間の選択肢を制限
+    const startTimeSelect = document.getElementById('start-time');
+    const endTimeSelect = document.getElementById('end-time');
+    
+    startTimeSelect.addEventListener('change', function() {
+        const selectedStartTime = this.value;
+        
+        if (!selectedStartTime) {
+            return;
+        }
+        
+        // 終了時間のすべてのオプションを取得
+        const endTimeOptions = endTimeSelect.querySelectorAll('option');
+        
+        // 選択された開始時間より前の終了時間オプションを無効化
+        endTimeOptions.forEach(option => {
+            if (option.value === "") return; // 「選択してください」オプションはスキップ
+            
+            if (option.value <= selectedStartTime) {
+                option.disabled = true;
+                // 無効化されたオプションが選択されていた場合、選択を解除
+                if (endTimeSelect.value === option.value) {
+                    endTimeSelect.value = "";
+                }
+            } else {
+                option.disabled = false;
+            }
+        });
+    });
+    
     // 予約フォームの送信イベント
     const reservationForm = document.getElementById('reservation-form');
     reservationForm.addEventListener('submit', function(e) {
@@ -27,20 +57,25 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // フォームデータの取得
         const room = document.getElementById('room').value;
+        const reservationDate = document.getElementById('reservation-date').value;
         const startTime = document.getElementById('start-time').value;
         const endTime = document.getElementById('end-time').value;
         const reserverName = document.getElementById('reserver-name').value;
         
         // 入力チェック
-        if (!room || !startTime || !endTime || !reserverName) {
+        if (!room || !reservationDate || !startTime || !endTime || !reserverName) {
             alert('すべての項目を入力してください。');
             return;
         }
         
-        // 時間が有効かチェック
-        const startDate = new Date(startTime);
-        const endDate = new Date(endTime);
+        // 日付と時間を組み合わせてDateオブジェクトを作成
+        const startDateTime = `${reservationDate}T${startTime}:00`;
+        const endDateTime = `${reservationDate}T${endTime}:00`;
         
+        const startDate = new Date(startDateTime);
+        const endDate = new Date(endDateTime);
+        
+        // 時間が有効かチェック
         if (startDate >= endDate) {
             alert('終了時間は開始時間より後にしてください。');
             return;
@@ -49,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 予約の重複チェック
         const conflictingReservation = check_conflict(room, startDate, endDate);
         if (conflictingReservation) {
-            alert(`予約の時間が重複しています。\n${format_date(conflictingReservation.startTime)}～${format_date(conflictingReservation.endTime)}は既に予約されています。`);
+            alert(`予約の時間が重複しています。\n${format_date(new Date(conflictingReservation.startTime))}～${format_date(new Date(conflictingReservation.endTime))}は既に予約されています。`);
             return;
         }
         
@@ -57,8 +92,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const newReservation = {
             id: Date.now(), // 一意のID
             room: room,
-            startTime: startTime,
-            endTime: endTime,
+            startTime: startDateTime,
+            endTime: endDateTime,
             reserverName: reserverName,
             createdAt: new Date().toISOString()
         };
