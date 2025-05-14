@@ -117,7 +117,18 @@
 
         <div class="reservations-container">
             <h2>予約一覧</h2>
-            <button id="download-csv">CSVをダウンロード</button>
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label for="filter-room">会議室で絞り込み:</label>
+                    <select id="filter-room">
+                        <option value="all">すべての会議室</option>
+                        <option value="A">会議室 A</option>
+                        <option value="B">会議室 B</option>
+                        <option value="C">会議室 C</option>
+                    </select>
+                </div>
+                <button id="download-csv">CSVをダウンロード</button>
+            </div>
             <div id="reservations-list"></div>
         </div>
     </div>

@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ローカルストレージから予約データを読み込む
     let reservations = JSON.parse(localStorage.getItem('reservations')) || [];
     
+    // 現在の絞り込み条件
+    let currentFilter = 'all';
+    
     // 会議室画像のクリックイベント
     const roomImages = document.querySelectorAll('.room-image');
     const roomSelect = document.getElementById('room');
@@ -120,6 +123,13 @@ document.addEventListener('DOMContentLoaded', function() {
         download_reservations_as_csv();
     });
     
+    // 絞り込み機能
+    const filterRoomSelect = document.getElementById('filter-room');
+    filterRoomSelect.addEventListener('change', function() {
+        currentFilter = this.value;
+        display_reservations();
+    });
+    
     // 初期表示時に予約一覧を表示
     display_reservations();
     
@@ -154,6 +164,29 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // 絞り込み条件が「すべて」以外なら、その会議室だけを表示
+        if (currentFilter !== 'all') {
+            const filteredReservations = sortedReservations.filter(r => r.room === currentFilter);
+            
+            if (filteredReservations.length === 0) {
+                reservationsList.innerHTML = `<p>会議室${currentFilter}の予約はありません。</p>`;
+                return;
+            }
+            
+            // 会議室ヘッダーの追加
+            const roomHeader = document.createElement('h3');
+            roomHeader.textContent = `会議室${currentFilter}`;
+            roomHeader.className = `room-header room-${currentFilter.toLowerCase()}`;
+            reservationsList.appendChild(roomHeader);
+            
+            // 予約アイテムの追加
+            filteredReservations.forEach(reservation => {
+                add_reservation_item(reservation, reservationsList);
+            });
+            
+            return;
+        }
+        
         // 会議室ごとにグループ化
         const roomA = sortedReservations.filter(r => r.room === 'A');
         const roomB = sortedReservations.filter(r => r.room === 'B');
@@ -163,6 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (roomA.length > 0) {
             const roomAHeader = document.createElement('h3');
             roomAHeader.textContent = '会議室A';
+            roomAHeader.className = 'room-header room-a';
             reservationsList.appendChild(roomAHeader);
             
             roomA.forEach(reservation => {
@@ -174,6 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (roomB.length > 0) {
             const roomBHeader = document.createElement('h3');
             roomBHeader.textContent = '会議室B';
+            roomBHeader.className = 'room-header room-b';
             reservationsList.appendChild(roomBHeader);
             
             roomB.forEach(reservation => {
@@ -185,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (roomC.length > 0) {
             const roomCHeader = document.createElement('h3');
             roomCHeader.textContent = '会議室C';
+            roomCHeader.className = 'room-header room-c';
             reservationsList.appendChild(roomCHeader);
             
             roomC.forEach(reservation => {
@@ -246,11 +282,21 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // 絞り込みが適用されている場合は、その会議室のみをCSVに含める
+        let reservationsToExport = reservations;
+        if (currentFilter !== 'all') {
+            reservationsToExport = reservations.filter(r => r.room === currentFilter);
+            if (reservationsToExport.length === 0) {
+                alert(`会議室${currentFilter}の予約データがありません。`);
+                return;
+            }
+        }
+        
         // CSVヘッダー
         let csvContent = '会議室,利用開始日時,利用終了日時,予約者名,予約日時\n';
         
         // 各予約をCSV行に変換
-        reservations.forEach(reservation => {
+        reservationsToExport.forEach(reservation => {
             const startTime = new Date(reservation.startTime);
             const endTime = new Date(reservation.endTime);
             const createdAt = new Date(reservation.createdAt);
@@ -273,7 +319,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 現在の日時をファイル名に使用
         const now = new Date();
-        const fileName = `reservations_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}.csv`;
+        let fileName = `reservations_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
+        
+        // 絞り込みが適用されている場合は、会議室名をファイル名に追加
+        if (currentFilter !== 'all') {
+            fileName += `_room${currentFilter}`;
+        }
+        
+        fileName += '.csv';
         
         link.setAttribute('href', url);
         link.setAttribute('download', fileName);
