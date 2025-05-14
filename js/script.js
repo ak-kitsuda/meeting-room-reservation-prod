@@ -157,6 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 会議室ごとにグループ化
         const roomA = sortedReservations.filter(r => r.room === 'A');
         const roomB = sortedReservations.filter(r => r.room === 'B');
+        const roomC = sortedReservations.filter(r => r.room === 'C');
         
         // 会議室Aの予約を表示
         if (roomA.length > 0) {
@@ -176,6 +177,17 @@ document.addEventListener('DOMContentLoaded', function() {
             reservationsList.appendChild(roomBHeader);
             
             roomB.forEach(reservation => {
+                add_reservation_item(reservation, reservationsList);
+            });
+        }
+        
+        // 会議室Cの予約を表示
+        if (roomC.length > 0) {
+            const roomCHeader = document.createElement('h3');
+            roomCHeader.textContent = '会議室C';
+            reservationsList.appendChild(roomCHeader);
+            
+            roomC.forEach(reservation => {
                 add_reservation_item(reservation, reservationsList);
             });
         }
